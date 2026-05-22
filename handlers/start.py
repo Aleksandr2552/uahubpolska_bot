@@ -27,6 +27,7 @@ main_keyboard = ReplyKeyboardMarkup(
 )
 
 @router.message(CommandStart())
+@router.message(CommandStart())
 async def start(message: Message):
 
     await add_user(
@@ -34,8 +35,17 @@ async def start(message: Message):
         message.from_user.username
     )
 
-    text = """
+    from database import get_stats
+
+    users, ads = await get_stats()
+
+    text = f"""
 🇵🇱 <b>Ласкаво просимо в UA HUB Polska</b>
+
+👥 Користувачів: <b>{users}</b>
+📨 Оголошень: <b>{ads}</b>
+
+━━━━━━━━━━━━━━━
 
 🔥 Робота
 🏠 Житло
