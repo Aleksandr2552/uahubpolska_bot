@@ -11,7 +11,10 @@ from aiogram.types import (
 )
 
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.state import (
+    State,
+    StatesGroup
+)
 
 from states.forms import AdForm
 from handlers.start import main_keyboard
@@ -19,7 +22,7 @@ from handlers.start import main_keyboard
 router = Router()
 
 # =========================
-# FSM МОДЕРАЦІЇ
+# FSM MODERATION
 # =========================
 
 class ModerationState(StatesGroup):
@@ -29,27 +32,32 @@ class ModerationState(StatesGroup):
     ban_reason = State()
 
 # =========================
-# БАН ЛИСТ
+# BANNED USERS
 # =========================
 
-    banned_users = {}
+banned_users = {}
 
 # =========================
-# КНОПКИ
+# CHOOSE TYPE KEYBOARD
 # =========================
 
 choose_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="🔎 Шукаю"),
-            KeyboardButton(text="✅ Пропоную")
+            KeyboardButton(
+                text="🔎 Шукаю"
+            ),
+
+            KeyboardButton(
+                text="✅ Пропоную"
+            )
         ]
     ],
     resize_keyboard=True
 )
 
 # =========================
-# ВИБІР КАТЕГОРІЇ
+# CATEGORY SELECT
 # =========================
 
 @router.message(F.text == "🔥 Робота")
@@ -82,7 +90,7 @@ async def category_start(
     )
 
 # =========================
-# ШУКАЮ / ПРОПОНУЮ
+# CHOOSE TYPE
 # =========================
 
 @router.message(F.text == "🔎 Шукаю")
@@ -105,7 +113,7 @@ async def choose_type(
     )
 
 # =========================
-# МІСТО
+# CITY
 # =========================
 
 @router.message(AdForm.city)
@@ -127,7 +135,7 @@ async def city(
     )
 
 # =========================
-# ЗАГОЛОВОК
+# TITLE
 # =========================
 
 @router.message(AdForm.title)
@@ -149,7 +157,7 @@ async def title(
     )
 
 # =========================
-# ЦІНА
+# PRICE
 # =========================
 
 @router.message(AdForm.price)
@@ -171,7 +179,7 @@ async def price(
     )
 
 # =========================
-# ОПИС
+# DESCRIPTION
 # =========================
 
 @router.message(AdForm.description)
@@ -193,7 +201,7 @@ async def description(
     )
 
 # =========================
-# КОНТАКТ
+# CONTACT
 # =========================
 
 @router.message(AdForm.contact)
@@ -264,16 +272,12 @@ async def contact(
     await state.clear()
 
     await message.answer(
-        "✅ Оголошення створено та відправлено на модерацію",
+        "✅ Оголошення відправлено на модерацію",
         reply_markup=main_keyboard
     )
 
-    await message.answer(
-    "🏠 Головне меню",
-    reply_markup=main_keyboard
-)
 # =========================
-# ПУБЛІКАЦІЯ
+# PUBLISH
 # =========================
 
 @router.callback_query(F.data == "publish")
@@ -293,7 +297,7 @@ async def publish_post(
     )
 
 # =========================
-# ВІДХИЛЕННЯ
+# REJECT
 # =========================
 
 @router.callback_query(F.data == "reject")
@@ -328,29 +332,19 @@ async def reject_reason(
         text.split("👤 ID: ")[1].split("\n")[0]
     )
 
-    new_text = (
-        text +
-        f"\n\n❌ ВІДХИЛЕНО\n\n📌 Причина:\n{message.text}"
-    )
-
     await message.bot.send_message(
         user_id,
         f"❌ Ваше оголошення відхилено\n\n📌 Причина:\n{message.text}"
     )
 
     await message.answer(
-        "✅ Користувачу відправлено причину"
-    )
-
-    await message.bot.send_message(
-        1561352771,
-        new_text
+        "✅ Причину відправлено"
     )
 
     await state.clear()
 
 # =========================
-# БАН
+# BAN
 # =========================
 
 @router.callback_query(F.data.startswith("ban_"))
@@ -364,8 +358,7 @@ async def ban_user(
     )
 
     await state.update_data(
-        ban_user=user_id,
-        ban_message=callback.message.text
+        ban_user=user_id
     )
 
     await state.set_state(
@@ -400,7 +393,7 @@ async def ban_reason(
     await state.clear()
 
 # =========================
-# СПИСОК БАНІВ
+# BANS LIST
 # =========================
 
 @router.message(F.text == "/bans")
@@ -419,20 +412,20 @@ async def show_bans(
 
         return
 
-    text = "🚫 СПИСОК ЗАБАНЕНИХ\n\n"
+    text = "🚫 СПИСОК БАНІВ\n\n"
 
     for user_id, reason in banned_users.items():
 
         text += (
-            f"👤 ID: {user_id}\n"
-            f"📌 Причина: {reason}\n"
+            f"👤 {user_id}\n"
+            f"📌 {reason}\n"
             f"🔓 /unban_{user_id}\n\n"
         )
 
     await message.answer(text)
 
 # =========================
-# РОЗБАН
+# UNBAN
 # =========================
 
 @router.message(F.text.startswith("/unban_"))
@@ -443,43 +436,27 @@ async def unban_user(
     if message.from_user.id != 1561352771:
         return
 
-    try:
-
-        user_id = int(
-            message.text.replace(
-                "/unban_",
-                ""
-            )
+    user_id = int(
+        message.text.replace(
+            "/unban_",
+            ""
         )
-
-    except:
-
-        await message.answer(
-            "❌ Невірний ID"
-        )
-
-        return
-
-    if user_id not in banned_users:
-
-        await message.answer(
-            "❌ Користувач не забанений"
-        )
-
-        return
-
-    del banned_users[user_id]
-
-    await message.answer(
-        f"✅ Користувача {user_id} розбанено"
     )
 
-    try:
+    if user_id in banned_users:
 
-        await message.bot.send_message(
-            user_id,
-            "✅ Вас розбанено"
+        del banned_users[user_id]
+
+        await message.answer(
+            f"✅ {user_id} розбанено"
         )
 
-    except:
-        pass
+        try:
+
+            await message.bot.send_message(
+                user_id,
+                "✅ Вас розбанено"
+            )
+
+        except:
+            pass
