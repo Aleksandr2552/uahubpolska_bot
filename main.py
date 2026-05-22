@@ -57,24 +57,90 @@ main_keyboard = ReplyKeyboardMarkup(
 # START
 # =========================
 
+async def check_sub_channel(user_id):
+
+    try:
+
+        member = await bot.get_chat_member(
+            CHANNEL_USERNAME,
+            user_id
+        )
+
+        return member.status in [
+            "member",
+            "administrator",
+            "creator"
+        ]
+
+    except:
+        return False
+
 @dp.message(CommandStart())
 async def start(message: Message):
 
-    text = f"""
-🇵🇱 <b>Вітаємо в UA HUB Polska!</b>
+    subscribed = await check_sub_channel(
+        message.from_user.id
+    )
 
-Тут українці в Польщі знаходять:
+    if not subscribed:
 
-🔥 Роботу
-🏠 Житло
-🛠 Послуги
-🚗 Перевезення
-📄 Допомогу з документами
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="📢 Підписатися",
+                        url="https://t.me/UAhubPolska"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="✅ Перевірити підписку",
+                        callback_data="check_sub"
+                    )
+                ]
+            ]
+        )
 
-👇 Оберіть потрібний розділ нижче.
-"""
+        await message.answer(
+            "🇵🇱 Для використання бота потрібно підписатися на канал.",
+            reply_markup=keyboard
+        )
 
-    await message.answer(text, reply_markup=main_keyboard)
+        return
+
+    text = f\"\"\"
+🇵🇱 <b>Ласкаво просимо в UA HUB Polska!</b>
+
+👇 Оберіть категорію:
+\"\"\"
+
+    await message.answer(
+        text,
+        reply_markup=main_keyboard
+    )
+
+@dp.callback_query(F.data == "check_sub")
+async def check_subscription(callback: CallbackQuery):
+
+    subscribed = await check_sub_channel(
+        callback.from_user.id
+    )
+
+    if subscribed:
+
+        await callback.message.delete()
+
+        await callback.message.answer(
+            "✅ Підписка підтверджена!",
+            reply_markup=main_keyboard
+        )
+
+    else:
+
+        await callback.answer(
+            "❌ Ви ще не підписані",
+            show_alert=True
+        )
 
 # =========================
 # КАТЕГОРІЇ
