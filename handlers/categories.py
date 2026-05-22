@@ -13,6 +13,10 @@ from states.forms import AdForm
 
 router = Router()
 
+# =========================
+# КНОПКИ
+# =========================
+
 choose_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [
@@ -23,20 +27,32 @@ choose_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+# =========================
+# ВИБІР КАТЕГОРІЇ
+# =========================
+
 @router.message(F.text == "🔥 Робота")
-async def work_category(
+@router.message(F.text == "🏠 Житло")
+@router.message(F.text == "🛠 Послуги")
+@router.message(F.text == "🚗 Перевезення")
+@router.message(F.text == "📄 Документи")
+async def category_start(
     message: Message,
     state: FSMContext
 ):
 
     await state.update_data(
-        category="🔥 Робота"
+        category=message.text
     )
 
     await message.answer(
         "👇 Оберіть тип оголошення",
         reply_markup=choose_keyboard
     )
+
+# =========================
+# ШУКАЮ / ПРОПОНУЮ
+# =========================
 
 @router.message(F.text == "🔎 Шукаю")
 @router.message(F.text == "✅ Пропоную")
@@ -57,6 +73,10 @@ async def choose_type(
         "📍 Вкажіть місто"
     )
 
+# =========================
+# МІСТО
+# =========================
+
 @router.message(AdForm.city)
 async def city(
     message: Message,
@@ -72,8 +92,12 @@ async def city(
     )
 
     await message.answer(
-        "📝 Заголовок"
+        "📝 Вкажіть заголовок"
     )
+
+# =========================
+# ЗАГОЛОВОК
+# =========================
 
 @router.message(AdForm.title)
 async def title(
@@ -90,8 +114,12 @@ async def title(
     )
 
     await message.answer(
-        "💰 Ціна або зарплата"
+        "💰 Вкажіть ціну або зарплату"
     )
+
+# =========================
+# ЦІНА
+# =========================
 
 @router.message(AdForm.price)
 async def price(
@@ -111,6 +139,10 @@ async def price(
         "📄 Напишіть опис"
     )
 
+# =========================
+# ОПИС
+# =========================
+
 @router.message(AdForm.description)
 async def description(
     message: Message,
@@ -129,6 +161,10 @@ async def description(
         "📞 Вкажіть контакт"
     )
 
+# =========================
+# КОНТАКТ
+# =========================
+
 @router.message(AdForm.contact)
 async def contact(
     message: Message,
@@ -139,8 +175,41 @@ async def contact(
         contact=message.text
     )
 
+    data = await state.get_data()
+
+    post_text = f"""
+{data['category']} 🇵🇱
+
+{data['ad_type']}
+
+📍 Місто: {data['city']}
+
+📝 {data['title']}
+
+💰 {data['price']}
+
+📄 Опис:
+{data['description']}
+
+📞 Контакт:
+{data['contact']}
+
+━━━━━━━━━━━━━━━
+🇵🇱 @UAhubPolska
+"""
+
+    # ВІДПРАВКА АДМІНУ
+
+    await message.bot.send_message(
+        1561352771,
+        post_text
+    )
+
+    # ПОВІДОМЛЕННЯ КОРИСТУВАЧУ
+
     await message.answer(
-        "✅ Оголошення створено"
+        "✅ Оголошення створено та відправлено на модерацію",
+        reply_markup=main_keyboard
     )
 
     await state.clear()
