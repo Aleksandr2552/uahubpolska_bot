@@ -1,0 +1,9 @@
+import os
+
+TOKEN = os.getenv("8760064417:AAFj-QHNveWTjzGlVkVS0UCJzB17NLGMQpw")
+
+ADMIN_ID = 1561352771
+
+CHANNEL_USERNAME = "@UAhubPolska"
+
+CHANNEL_LINK = "https://t.me/UAhubPolska"
