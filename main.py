@@ -1,5 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher, F
+from aiogram import BaseMiddleware
 from aiogram.types import (
     Message,
     ReplyKeyboardMarkup,
@@ -30,6 +31,106 @@ bot = Bot(
 )
 
 dp = Dispatcher()
+
+# =====================================
+# SUBSCRIPTION MIDDLEWARE
+# =====================================
+
+class SubscriptionMiddleware(BaseMiddleware):
+
+    async def __call__(
+        self,
+        handler,
+        event,
+        data
+    ):
+
+        user_id = event.from_user.id
+
+        try:
+
+            member = await bot.get_chat_member(
+                CHANNEL_USERNAME,
+                user_id
+            )
+
+            subscribed = member.status in [
+                "member",
+                "administrator",
+                "creator"
+            ]
+
+        except:
+
+            subscribed = False
+
+        if not subscribed:
+
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text="📢 Підписатися",
+                            url="https://t.me/UAhubPolska"
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✅ Я підписався",
+                            callback_data="check_sub"
+                        )
+                    ]
+                ]
+            )
+
+            await event.answer(
+                "❌ Для використання бота потрібно підписатися на канал",
+                reply_markup=keyboard
+            )
+
+            return
+
+        return await handler(event, data)
+
+dp.message.middleware(
+    SubscriptionMiddleware()
+)
+
+@dp.callback_query(F.data == "check_sub")
+async def check_sub(callback: CallbackQuery):
+
+    try:
+
+        member = await bot.get_chat_member(
+            CHANNEL_USERNAME,
+            callback.from_user.id
+        )
+
+        subscribed = member.status in [
+            "member",
+            "administrator",
+            "creator"
+        ]
+
+    except:
+
+        subscribed = False
+
+    if subscribed:
+
+        await callback.message.delete()
+
+        await callback.message.answer(
+            "✅ Підписка підтверджена!",
+            reply_markup=main_keyboard
+        )
+
+    else:
+
+        await callback.answer(
+            "❌ Ви ще не підписались",
+            show_alert=True
+        )
 
 # =========================
 # КНОПКИ
