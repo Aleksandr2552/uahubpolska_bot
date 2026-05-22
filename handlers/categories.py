@@ -16,30 +16,30 @@ router = Router()
 choose_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text='🔎 Шукаю'),
-            KeyboardButton(text='✅ Пропоную')
+            KeyboardButton(text="🔎 Шукаю"),
+            KeyboardButton(text="✅ Пропоную")
         ]
     ],
     resize_keyboard=True
 )
 
-@router.message(F.text == '🔥 Робота')
+@router.message(F.text == "🔥 Робота")
 async def work_category(
     message: Message,
     state: FSMContext
 ):
 
     await state.update_data(
-        category='🔥 Робота'
+        category="🔥 Робота"
     )
 
     await message.answer(
-        '👇 Оберіть тип оголошення',
+        "👇 Оберіть тип оголошення",
         reply_markup=choose_keyboard
     )
 
-@router.message(F.text == '🔎 Шукаю')
-@router.message(F.text == '✅ Пропоную')
+@router.message(F.text == "🔎 Шукаю")
+@router.message(F.text == "✅ Пропоную")
 async def choose_type(
     message: Message,
     state: FSMContext
@@ -54,7 +54,7 @@ async def choose_type(
     )
 
     await message.answer(
-        '📍 Вкажіть місто'
+        "📍 Вкажіть місто"
     )
 
 @router.message(AdForm.city)
@@ -72,7 +72,7 @@ async def city(
     )
 
     await message.answer(
-        '📝 Вкажіть заголовок'
+        "📝 Заголовок"
     )
 
 @router.message(AdForm.title)
@@ -90,7 +90,7 @@ async def title(
     )
 
     await message.answer(
-        '💰 Вкажіть зарплату або ціну'
+        "💰 Ціна або зарплата"
     )
 
 @router.message(AdForm.price)
@@ -108,7 +108,7 @@ async def price(
     )
 
     await message.answer(
-        '📄 Напишіть опис'
+        "📄 Напишіть опис"
     )
 
 @router.message(AdForm.description)
@@ -126,7 +126,7 @@ async def description(
     )
 
     await message.answer(
-        '📞 Вкажіть контакт'
+        "📞 Вкажіть контакт"
     )
 
 @router.message(AdForm.contact)
@@ -140,7 +140,7 @@ async def contact(
     )
 
     await message.answer(
-        '✅ Оголошення створено'
+        "✅ Оголошення створено"
     )
 
     await state.clear()
