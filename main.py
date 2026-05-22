@@ -108,11 +108,11 @@ async def start(message: Message):
 
         return
 
-    text = f\"\"\"
+    text = f"""
 🇵🇱 <b>Ласкаво просимо в UA HUB Polska!</b>
 
 👇 Оберіть категорію:
-\"\"\"
+"""
 
     await message.answer(
         text,
